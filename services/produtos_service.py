@@ -1,0 +1,2 @@
+class ProdutoService:
+    pass
