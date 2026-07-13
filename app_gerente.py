@@ -54,7 +54,7 @@ def ler_int_positivo(mensagem):
 
 def confirmar_acao(mensagem):
     while True:
-        reposta = input(mensagem).strip().lower()
+        resposta = input(mensagem).strip().lower()
 
         if resposta == "sim":
             return True
