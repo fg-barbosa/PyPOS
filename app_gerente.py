@@ -15,6 +15,55 @@ def ler_float(mensagem):
         except ValueError:
             print("Digite um número válido. Ex: 29.90")
 
+def ler_float_positivo(mensagem):
+    while True:
+        positivo = ler_float(mensagem)
+
+        if positivo > 0:
+            return positivo
+        
+        print("Digite um valor acima de 0.")
+
+def ler_int_nao_negativo(mensagem):
+    while True:
+        int_positivo = ler_int(mensagem)
+
+        if int_positivo >= 0:
+            return int_positivo
+
+        print("Digite um valor acima de 0.")
+
+
+def ler_texto_obrigatorio(mensagem):
+    while True:
+        texto = input(mensagem).strip()
+
+        if texto:
+            return texto
+
+        print("Este campo não pode ficar vazio.")
+
+def ler_int_positivo(mensagem):
+    while True:
+        int_adiocionar = ler_int(mensagem)
+
+        if int_adiocionar > 0:
+            return int_adiocionar
+
+        print("Digite um valor maior que 0.")
+
+def confirmar_acao(mensagem):
+    while True:
+        reposta = input(mensagem).strip().lower()
+
+        if resposta == "sim":
+            return True
+
+        elif resposta == "nao":
+            return False
+
+        print("Digite apenas sim ou nao")
+
 def mostrar_produto(produto):
     print("-" * 40)
     print(f"Código: {produto.codigo}")
@@ -55,10 +104,10 @@ def main():
         opcao = input("Escolha uma opção: ")
 
         if opcao == "1":
-            nome = input("Nome do produto: ")
-            preco = ler_float("Preço do produto: ")
-            estoque = ler_int("Quantidade em estoque: ")
-            categoria = input("Categoria do produto: ")
+            nome = ler_texto_obrigatorio("Nome do produto: ")
+            preco = ler_float_positivo("Preço do produto: ")
+            estoque = ler_int_nao_negativo("Quantidade em estoque: ")
+            categoria = ler_texto_obrigatorio("Categoria do produto: ")
 
             tamanho = input("Tamanho, se tiver: ") or None
             cor = input("Cor, se tiver: ") or None
@@ -134,16 +183,25 @@ def main():
         elif opcao == "6":
             codigo = ler_int("Código do produto que deseja excluir: ")
 
-            excluido = produtos_service.excluir_produto(codigo)
+            confirmar = confirmar_acao(
+                "Tem certeza que deseja excuir este produto? (sim / nao)"
+            )
 
-            if excluido:
-                print("Produto excluído com sucesso!")
+            if confirmar:
+                excluido = produtos_service.excluir_produto(codigo)
+
+                if excluido:
+                    print("Produto excluido com sucesso")
+
+                else:
+                    print("Produto não encontrado")
+
             else:
-                print("Produto não encontrado.")
+                print("Exclusão cancelada")
 
         elif opcao == "7":
             codigo = ler_int("Código do produto: ")
-            quantidade = ler_int("Quantidade para adicionar ao estoque: ")
+            quantidade = ler_int_positivo("Quantidade para adicionar ao estoque: ")
 
             atualizado = produtos_service.adicionar_estoque(codigo, quantidade)
 
@@ -154,7 +212,7 @@ def main():
 
         elif opcao == "8":
             codigo = ler_int("Código do produto: ")
-            quantidade = ler_int("Quantidade para baixar do estoque: ")
+            quantidade = ler_int_positivo("Quantidade para baixar do estoque: ")
 
             status = produtos_service.baixar_estoque(codigo, quantidade)
 
