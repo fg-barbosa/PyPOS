@@ -1,4 +1,5 @@
 from database.conexao import conectar
+from models.produto import Produto
 
 class ProdutoService:
     def __init__(self):
@@ -21,6 +22,22 @@ class ProdutoService:
         """)
         self.conn.commit()
 
+    def transformar_em_produto(self, dados):
+        if dados is None:
+            return None
+
+        return Produto(
+            dados[0],
+            dados[1],
+            dados[2],
+            dados[3],
+            dados[4],
+            dados[5],
+            dados[6],
+            dados[7]
+        )
+
+
     def cadastrar_produto(self, nome, preco, estoque, categoria, tamanho, cor, imagem_url):
         self.cursor.execute("""
             INSERT INTO produtos (nome, preco, estoque, categoria, tamanho, cor, imagem_url)
@@ -30,18 +47,33 @@ class ProdutoService:
 
     def listar_todos(self):
         self.cursor.execute("SELECT * FROM produtos")
-        return self.cursor.fetchall()
+        resultados = self.cursor.fetchall()
+
+        produtos = []
+
+        for dados in resultados:
+            produto = self.transformar_em_produto(dados)
+            produtos.append(produto)
+
+        return produtos
 
     def listar_por_categoria(self, categoria):
         self.cursor.execute("SELECT * FROM produtos WHERE categoria LIKE ?", (f"%{categoria}%",))
-        return self.cursor.fetchall()
+        resultados = self.cursor.fetchall()
+
+        produtos = []
+
+        for dados in resultados:
+            produto = self.transformar_em_produto(dados)
+            produtos.append(produto)
+
+        return produtos
 
     def atualizar_produto(self, codigo, nome, preco, estoque, categoria, tamanho, cor, imagem_url):
         produto = self.buscar_por_codigo(codigo)
 
         if produto is None:
-            print("Produto não encontrado.")
-            return
+            return False
         
         self.cursor.execute("""
             UPDATE produtos
@@ -50,18 +82,18 @@ class ProdutoService:
         """, (nome, preco, estoque, categoria, tamanho, cor, imagem_url, codigo))
 
         self.conn.commit()
-        print("Produto atualizado com sucesso!")
+        return True
 
     def buscar_por_codigo(self, codigo):
         self.cursor.execute("SELECT * FROM produtos WHERE codigo = ?", (codigo,))
-        return self.cursor.fetchone()
+        dados = self.cursor.fetchone()
+        return self.transformar_em_produto(dados)
 
     def excluir_produto(self, codigo):
         produto = self.buscar_por_codigo(codigo)
 
         if produto is None:
-            print("Produto não encontrado.")
-            return
+            return False
 
         self.cursor.execute("""
             DELETE FROM produtos
@@ -69,14 +101,13 @@ class ProdutoService:
         """, (codigo,))
 
         self.conn.commit()
-        print("Produto excluído com sucesso!")
+        return True
 
     def adicionar_estoque(self, codigo, quantidade):
         produto = self.buscar_por_codigo(codigo)
 
-        if produto is None:
-            print("Produto não encontrado.")
-            return
+        if produto is None: 
+            return False
 
         self.cursor.execute("""
             UPDATE produtos
@@ -85,20 +116,18 @@ class ProdutoService:
         """, (quantidade, codigo))
 
         self.conn.commit()
-        print("Estoque atualizado com sucesso!")
+        return True
 
     def baixar_estoque(self, codigo, quantidade):
         produto = self.buscar_por_codigo(codigo)
 
         if produto is None:
-            print("Produto não encontrado.")
-            return
+            return "produto_nao_encontrado"
 
-        estoque_atual = produto[3]
+        estoque_atual = produto.estoque
 
         if quantidade > estoque_atual:
-            print("Estoque insuficiente.")
-            return
+            return "estoque_insuficiente"
 
         self.cursor.execute("""
             UPDATE produtos
@@ -107,7 +136,7 @@ class ProdutoService:
         """, (quantidade, codigo))
 
         self.conn.commit()
-        print("Estoque baixado com sucesso!")
+        return "ok"
 
     def listar_estoque_baixo(self, limite=5):
         self.cursor.execute("""
@@ -115,4 +144,12 @@ class ProdutoService:
             WHERE estoque <= ?
         """, (limite,))
 
-        return self.cursor.fetchall()
+        resultados = self.cursor.fetchall()
+
+        produtos = []
+
+        for dados in resultados:
+            produto = self.transformar_em_produto(dados)
+            produtos.append(produto)
+
+        return produtos

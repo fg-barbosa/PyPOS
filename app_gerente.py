@@ -24,6 +24,24 @@ def ler_float_positivo(mensagem):
         
         print("Digite um valor acima de 0.")
 
+def ler_float_opcional(mensagem, valor_atual):
+    while True:
+        entrada = input(mensagem).strip().replace(",", ".")
+
+        if entrada == "":
+            return valor_atual
+        
+        try:
+            novo_valor = float(entrada)
+
+            if novo_valor == 0:
+                return novo_valor
+
+            print("Digite um valor maior que 0.")
+
+        except ValueError:
+            print("Digite um número valido. Ex:29.99")
+
 def ler_int_nao_negativo(mensagem):
     while True:
         int_positivo = ler_int(mensagem)
